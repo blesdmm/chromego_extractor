@@ -7,9 +7,14 @@ on:
     schedule:
         - cron: "0 0,12 * * *"
     workflow_dispatch:
+
 jobs:
     Extract:
         runs-on: ubuntu-latest
+
+        # 1. 显式赋予仓库读写权限，解决推送报错
+        permissions:
+            contents: write
 
         steps:
             - name: Checkout repository
@@ -18,7 +23,7 @@ jobs:
             - name: Set up Python
               uses: actions/setup-python@v5
               with:
-                  python-version: 3.11
+                  python-version: '3.11'
             
             - name: Install dependencies
               run: pip install -r requirements.txt
@@ -33,12 +38,8 @@ jobs:
                 sed -Ei "s|recently extracted at: \`UTC [0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}\`|recently extracted at: \`UTC $(date '+%Y-%m-%d %H:%M:%S')\`|g" README.md
               
             - name: Commit & Push changes
-              env:
-                  GITHUB_TOKEN: ${{ github.token }}
-              uses: stefanzweifel/git-auto-commit-action@v4.16.0
+              uses: stefanzweifel/git-auto-commit-action@v5  # 升级到 v5 版本
               with:
-                    commit_message: Auto extract by Github Actions at UTC ${{ env.DATE }}
-                    create_branch: true
+                    commit_message: "Auto extract by Github Actions"
                     branch: main
                     commit_options: '--allow-empty'
-                    push_options: '--force'
